@@ -29,7 +29,10 @@ build() {
 package() {
   cd "$srcdir"
   make PREFIX=/usr DESTDIR="$pkgdir" install
-  install -m644 -D "$srcdir/dwm.desktop" "$pkgdir/usr/share/xsessions/dwm.desktop"
-  install -m755 -D "$srcdir/powermenu.sh" "$pkgdir/usr/local/bin/powermenu.sh"
+  install -m644 -D "$srcdir/scripts/dwm.desktop" "$pkgdir/usr/share/xsessions/dwm.desktop"
+  install -m755 -D "$srcdir/scripts/powermenu.sh" "$pkgdir/usr/local/bin/powermenu.sh"
+  install -m755 -D "$srcdir/scripts/dmenu-theming" "$pkgdir/usr/local/bin/dmenu-theming"
+  install -m755 -D "$srcdir/scripts/dmenu-websearch-sources" "$pkgdir/usr/local/bin/dmenu-websearch-sources"
+  install -m755 -D "$srcdir/scripts/dmenu-websearch.sh" "$pkgdir/usr/local/bin/dmenu-websearch.sh"
 
 }

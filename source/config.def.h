@@ -89,7 +89,7 @@ static const Layout layouts[] = {
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
 static const char *powermenu[] = { "/bin/bash", "-c", "/usr/local/bin/powermenu.sh", NULL };
-
+static const char *searchmenu[] = { "/bin/bash", "-c", "/usr/local/bin/dmenu-websearch.sh", NULL };
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont};
@@ -100,7 +100,8 @@ static Key keys[] = {
 	{ 0,			XF86XK_AudioLowerVolume,	spawn,			{.v = downvol } },
 	{ 0,			XF86XK_AudioMute,			spawn,			{.v = mutevol } },
 	{ 0,			XF86XK_AudioRaiseVolume,	spawn,			{.v = upvol   } },
-    { MODKEY|ShiftMask,             XK_s,      spawn,          {.v = powermenu } },
+    { MODKEY|ShiftMask,             XK_x,      spawn,          {.v = powermenu } },
+    { MODKEY|ShiftMask,             XK_u,      spawn,          {.v = searchmenu } },
     { 0,			XF86XK_MonBrightnessUp  ,	spawn ,			{.v = light_up}} ,
 	{ 0,			XF86XK_MonBrightnessDown,	spawn ,			{.v = light_down}},
 	{ MODKEY,            			XK_y,  	   togglescratch,  {.ui = 0 } },
