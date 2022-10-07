@@ -1,6 +1,6 @@
-# Maintainer: iyamnabeen 
+# Maintainer: pwnwriter 
 # gmail:  <iym.nabeen@gmail.com>
-# github: <github.com/iyamnabeen>
+# github: <github.com/pwnwriter>
 
 pkgname=metis-dwm
 pkgver=1.3
