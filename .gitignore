@@ -1,0 +1,5 @@
+metis-dwm/config.h
+metis-dwm/*.o
+metis-dwm/*.diff
+metis-dwm/*.orig
+metis-dwm/*.rej
