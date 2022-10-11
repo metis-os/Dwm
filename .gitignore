@@ -1,5 +1,5 @@
-metis-dwm/config.h
-metis-dwm/*.o
-metis-dwm/*.diff
-metis-dwm/*.orig
-metis-dwm/*.rej
+source/config.h
+source/*.o
+source/*.diff
+source/*.orig
+source/*.rej
