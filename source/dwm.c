@@ -38,6 +38,7 @@
 #include <X11/Xproto.h>
 #include <X11/Xresource.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/shape.h>
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
@@ -275,6 +276,7 @@ static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void xinitvisual();
 static void xrdb(const Arg *arg);
 static void zoom(const Arg *arg);
+static void win_round_corners(Window w, int rad);
 
 static pid_t getparentprocess(pid_t p);
 static int isdescprocess(pid_t p, pid_t c);
@@ -740,6 +742,7 @@ configurerequest(XEvent *e)
 		wc.stack_mode = ev->detail;
 		XConfigureWindow(dpy, ev->window, ev->value_mask, &wc);
 	}
+
 	XSync(dpy, False);
 }
 
@@ -1351,6 +1354,8 @@ maprequest(XEvent *e)
 		return;
 	if (!wintoclient(ev->window))
 		manage(ev->window, &wa);
+
+	win_round_corners(ev->window, roundcorners);
 }
 
 void
@@ -1519,8 +1524,10 @@ recttomon(int x, int y, int w, int h)
 void
 resize(Client *c, int x, int y, int w, int h, int interact)
 {
-	if (applysizehints(c, &x, &y, &w, &h, interact))
+	if (applysizehints(c, &x, &y, &w, &h, interact)) {
 		resizeclient(c, x, y, w, h);
+		win_round_corners(c->win, roundcorners);
+	}
 }
 
 void
@@ -2632,6 +2639,45 @@ zoom(const Arg *arg)
 		if (!c || !(c = nexttiled(c->next)))
 			return;
 	pop(c);
+}
+
+void
+win_round_corners(Window w, int rad)
+{
+	/* Yanked from https://github.com/dylanaraps/sowm/pull/58 */
+	unsigned int ww, wh, dia = 2 * rad;
+
+	XWindowAttributes wa;
+	XGetWindowAttributes(dpy, w, &wa);
+	ww = wa.width;
+	wh = wa.height;
+
+	if (ww < dia || wh < dia) return;
+
+	Pixmap mask = XCreatePixmap(dpy, w, ww, wh, 1);
+
+	if (!mask) return;
+
+	XGCValues xgcv;
+	GC shape_gc = XCreateGC(dpy, mask, 0, &xgcv);
+
+	if (!shape_gc) {
+		XFreePixmap(dpy, mask);
+		return;
+	}
+
+	XSetForeground(dpy, shape_gc, 0);
+	XFillRectangle(dpy, mask, shape_gc, 0, 0, ww, wh);
+	XSetForeground(dpy, shape_gc, 1);
+	XFillArc(dpy, mask, shape_gc, 0, 0, dia, dia, 0, 23040);
+	XFillArc(dpy, mask, shape_gc, ww-dia-1, 0, dia, dia, 0, 23040);
+	XFillArc(dpy, mask, shape_gc, 0, wh-dia-1, dia, dia, 0, 23040);
+	XFillArc(dpy, mask, shape_gc, ww-dia-1, wh-dia-1, dia, dia, 0, 23040);
+	XFillRectangle(dpy, mask, shape_gc, rad, 0, ww-dia, wh);
+	XFillRectangle(dpy, mask, shape_gc, 0, rad, ww, wh-dia);
+	XShapeCombineMask(dpy, w, ShapeBounding, 0, 0, mask, ShapeSet);
+	XFreePixmap(dpy, mask);
+	XFreeGC(dpy, shape_gc);
 }
 
 int

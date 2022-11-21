@@ -13,6 +13,7 @@ static const char *fonts[]          = { "JetBrainsMono Nerd Font, monospace:size
 static const char dmenufont[]       = "JetBrainsMono Nerd Font, monospace:size=12";
 static const unsigned int baralpha = 0xd0;
 static const unsigned int borderalpha = OPAQUE;
+static const unsigned int roundcorners = 20;
 static char normbgcolor[]           = "#222222";
 static char normbordercolor[]       = "#4a393b";
 static char normfgcolor[]           = "#bbbbbb";
