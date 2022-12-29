@@ -847,6 +847,7 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 			}
 		}
 	}
+	w += barroundcorners / 2; /* push text left to make up for the rounded corners */
 	if (!isCode)
 		w += TEXTW(text) - lrpad;
 	else
@@ -961,6 +962,7 @@ drawbar(Monitor *m)
 			drw_rect(drw, x, 0, w, bh, 1, 1);
 	}
 	drw_map(drw, m->barwin, 0, 0, m->ww, bh);
+	win_round_corners(m->barwin, barroundcorners);
 }
 
 void
