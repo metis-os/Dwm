@@ -40,19 +40,6 @@ static const unsigned int alphas[][3]      = {
 };
 
 
-typedef struct {
-	const char *name;
-	const void *cmd;
-} Sp;
-const char *spcmd1[] = {"st", "-n", "spterm1", "-g", "80x20", NULL };
-const char *spcmd2[] = {"st", "-n", "spterm2", "-g", "100x30", NULL };
-static Sp scratchpads[] = {
-	/* name			      cmd  */
-	{"spterm1",     spcmd1},
-	{"spterm2",	  	spcmd2},
-};
-
-
 /* tagging */
 static const char *tags[] = { " terminal", " browser", " music", " burp", " useless" };
 
@@ -61,12 +48,14 @@ static const Rule rules[] = {
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	 */
-	/* class		instance	 title		        tags        mask  isfloating  isterminal  noswallow  monitor */
-	{ "firefox",   	NULL,		NULL,             1         << 1,			0,			0,         -1,      -1 },
-	{ NULL,         NULL, 	"Event Tester",   0,				   0,     0,			1,		      0       -1 }, /* xev */
-	{ NULL,		  "spterm1",	NULL,		        SPTAG(0),		   1,			0,			0,		      0       -1 },
-	{ NULL,		  "spterm2",	NULL,		        SPTAG(1),		   1,			0,			0,		      0       -1 },
+	/* class		instance	 title		        tags        mask  isfloating  noswallow  monitor              scratch key */
+	{ "firefox",   	NULL,		NULL,             1         << 1,			0,			0,         -1,      -1,   0 },
+	{ NULL,         NULL, 	"Event Tester",   0,				   0,     0,			1,		      0       -1, 0 }, /* xev */
+	{ NULL,		  "scratchpad",	NULL,		        0,		   1,			0,		      0,       -1, 's' },
 };
+
+/*First arg only serves to match against key in rules*/
+static const char *scratchpadcmd[] = {"s", "st", "-n", "scratchpad", "-g", "80x20", NULL};
 
 /* layout(s) */
 static const float mfact     = 0.52; /* factor of master area size [0.05..0.95] */
@@ -107,8 +96,7 @@ static Key keys[] = {
 
   { MODKEY|ShiftMask,             XK_x,                     spawn,          {.v = powermenu } },
   { MODKEY|ShiftMask,             XK_u,                     spawn,          {.v = searchmenu } },
-	{ MODKEY,            			      XK_q,  	                  togglescratch,  {.ui = 0 } },
-	{ MODKEY,            			      XK_grave,	                togglescratch,  {.ui = 1 } },
+	{ MODKEY,                       XK_grave,  togglescratch,  {.v = scratchpadcmd } },
 	{ MODKEY,                       XK_l,      setmfact,		    {.f = +0.05} },
 	{ MODKEY,                       XK_k,      focusstack,		  {.i = -1 } },
 	{ MODKEY,                       XK_j,      focusstack,		  {.i = +1 } },

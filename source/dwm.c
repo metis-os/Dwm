@@ -63,10 +63,7 @@
 #define MOUSEMASK               (BUTTONMASK|PointerMotionMask)
 #define WIDTH(X)                ((X)->w + 2 * (X)->bw)
 #define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
-#define NUMTAGS					(LENGTH(tags) + LENGTH(scratchpads))
-#define TAGMASK     			((1 << NUMTAGS) - 1)
-#define SPTAG(i) 				((1 << LENGTH(tags)) << (i))
-#define SPTAGMASK   			(((1 << LENGTH(scratchpads))-1) << LENGTH(tags))
+#define TAGMASK                 ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
 #define XRDB_LOAD_COLOR(R,V)    if (XrmGetResource(xrdb, R, NULL, &type, &value) == True) { \
                                   if (value.addr != NULL && strnlen(value.addr, 8) == 7 && value.addr[0] == '#') { \
@@ -123,6 +120,7 @@ struct Client {
 	unsigned int tags;
 	int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen, isterminal, noswallow;
 	pid_t pid;
+	char scratchkey;
 	Client *next;
 	Client *snext;
 	Client *swallowing;
@@ -174,6 +172,7 @@ typedef struct {
 	int isterminal;
 	int noswallow;
 	int monitor;
+	const char scratchkey;
 } Rule;
 
 /* function declarations */
@@ -247,6 +246,7 @@ static void sigchld(int unused);
 static void sighup(int unused);
 static void sigterm(int unused);
 static void spawn(const Arg *arg);
+static void spawnscratch(const Arg *arg);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void tile(Monitor *);
@@ -348,6 +348,7 @@ applyrules(Client *c)
 	/* rule matching */
 	c->isfloating = 0;
 	c->tags = 0;
+	c->scratchkey = 0;
 	XGetClassHint(dpy, c->win, &ch);
 	class    = ch.res_class ? ch.res_class : broken;
 	instance = ch.res_name  ? ch.res_name  : broken;
@@ -362,11 +363,7 @@ applyrules(Client *c)
 			c->noswallow  = r->noswallow;
 			c->isfloating = r->isfloating;
 			c->tags |= r->tags;
-			if ((r->tags & SPTAGMASK) && r->isfloating) {
-				c->x = c->mon->wx + (c->mon->ww / 2 - WIDTH(c) / 2);
-				c->y = c->mon->wy + (c->mon->wh / 2 - HEIGHT(c) / 2);
-			}
-
+			c->scratchkey = r->scratchkey;
 			for (m = mons; m && m->num != r->monitor; m = m->next);
 			if (m)
 				c->mon = m;
@@ -376,7 +373,8 @@ applyrules(Client *c)
 		XFree(ch.res_class);
 	if (ch.res_name)
 		XFree(ch.res_name);
-	c->tags = c->tags & TAGMASK ? c->tags & TAGMASK : (c->mon->tagset[c->mon->seltags] & ~SPTAGMASK);
+
+	c->tags = c->tags & TAGMASK ? c->tags & TAGMASK : c->mon->tagset[c->mon->seltags];
 }
 
 int
@@ -1318,6 +1316,8 @@ manage(Window w, XWindowAttributes *wa)
 	updatewindowtype(c);
 	updatesizehints(c);
 	updatewmhints(c);
+	c->x = c->mon->mx + (c->mon->mw - WIDTH(c)) / 2;
+	c->y = c->mon->my + (c->mon->mh - HEIGHT(c)) / 2;
 	XSelectInput(dpy, w, EnterWindowMask|FocusChangeMask|PropertyChangeMask|StructureNotifyMask);
 	grabbuttons(c, 0);
 	if (!c->isfloating)
@@ -1900,10 +1900,6 @@ showhide(Client *c)
 	if (!c)
 		return;
 	if (ISVISIBLE(c)) {
-		if ((c->tags & SPTAGMASK) && c->isfloating) {
-			c->x = c->mon->wx + (c->mon->ww / 2 - WIDTH(c) / 2);
-			c->y = c->mon->wy + (c->mon->wh / 2 - HEIGHT(c) / 2);
-		}
 		/* show clients top down */
 		XMoveWindow(dpy, c->win, c->x, c->y);
 		if ((!c->mon->lt[c->mon->sellt]->arrange || c->isfloating) && !c->isfullscreen)
@@ -1949,6 +1945,19 @@ spawn(const Arg *arg)
 		setsid();
 		execvp(((char **)arg->v)[0], (char **)arg->v);
 		fprintf(stderr, "dwm: execvp %s", ((char **)arg->v)[0]);
+		perror(" failed");
+		exit(EXIT_SUCCESS);
+	}
+}
+
+void spawnscratch(const Arg *arg)
+{
+	if (fork() == 0) {
+		if (dpy)
+			close(ConnectionNumber(dpy));
+		setsid();
+		execvp(((char **)arg->v)[1], ((char **)arg->v)+1);
+		fprintf(stderr, "dwm: execvp %s", ((char **)arg->v)[1]);
 		perror(" failed");
 		exit(EXIT_SUCCESS);
 	}
@@ -2026,24 +2035,20 @@ togglescratch(const Arg *arg)
 {
 	Client *c;
 	unsigned int found = 0;
-	unsigned int scratchtag = SPTAG(arg->ui);
-	Arg sparg = {.v = scratchpads[arg->ui].cmd};
 
-	for (c = selmon->clients; c && !(found = c->tags & scratchtag); c = c->next);
+	for (c = selmon->clients; c && !(found = c->scratchkey == ((char**)arg->v)[0][0]); c = c->next);
 	if (found) {
-		unsigned int newtagset = selmon->tagset[selmon->seltags] ^ scratchtag;
-		if (newtagset) {
-			selmon->tagset[selmon->seltags] = newtagset;
-			focus(NULL);
-			arrange(selmon);
-		}
+		c->tags = ISVISIBLE(c) ? 0 : selmon->tagset[selmon->seltags];
+		focus(NULL);
+		arrange(selmon);
+
 		if (ISVISIBLE(c)) {
 			focus(c);
 			restack(selmon);
 		}
-	} else {
-		selmon->tagset[selmon->seltags] |= scratchtag;
-		spawn(&sparg);
+
+	} else{
+		spawnscratch(arg);
 	}
 }
 
