@@ -1,0 +1,78 @@
+#!/usr/bin/env sh
+# Copyright PwnWriter // METIS Linux 2022 - present 
+
+# Global variable to generate random number
+ssname=$(date +%N | sed 's/...$//').png
+
+# Poweroff selection menu
+poweroff_menu() {
+  selected=$(printf "%s\n" "cancel" "shutdown" "reboot" "sleep" "tty" | dmenu -c)
+  case "$selected" in
+    "shutdown")
+      doas poweroff
+      ;;
+    "reboot")
+      doas reboot
+      ;;
+    "sleep")
+      doas zzz
+      ;;
+    "cancel")
+      return
+      ;;
+  esac
+}
+
+# Check the directory to save screenshots. Create one if not found.
+check_ssdir() {
+  if [ ! -d "$HOME/pix/ss/" ]; then
+    mkdir -p "$HOME/pix/ss"
+  fi
+}
+
+# Take a screenshot using ImageMagick without selection menu
+ss_without_selection() {
+  check_ssdir
+  import -window root "$HOME/pix/ss/$ssname"
+  xclip -selection clipboard -t image/png -i "$HOME/pix/ss/$ssname"
+  notify-send "Screenshot taken without selection" "Screenshot image copied to clipboard"
+}
+
+# Take a screenshot using ImageMagick with selection menu
+ss_with_selection() {
+  check_ssdir
+  import "$HOME/pix/ss/$ssname"
+  xclip -selection clipboard -t image/png -i "$HOME/pix/ss/$ssname"
+  notify-send "Screenshot taken with selection" "Screenshot image copied to clipboard"
+}
+
+# Search in a browser directly through dmenu
+search() {
+  URL='https://duckduckgo.com/?q='
+  query=$(echo '' | dmenu -p "Search:")
+  if [ -n "$query" ]; then
+    xdg-open "${URL}${query}" 2> /dev/null
+  fi
+}
+
+# getopt implementation for arguments
+while getopts 'sbpw' option; do
+  case "$option" in
+    s)
+      ss_with_selection
+      ;;
+    b)
+      ss_without_selection
+      ;;
+    p)
+      poweroff_menu
+      ;;
+    w)
+      search
+      ;;
+    *)
+      exit 1
+      ;;
+  esac
+done
+

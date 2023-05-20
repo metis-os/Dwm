@@ -159,6 +159,7 @@ struct Monitor {
 	Client *stack;
 	Monitor *next;
 	Window barwin;
+	Window statuswin;
 	const Layout *lt[2];
 };
 
@@ -845,20 +846,19 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 			}
 		}
 	}
-	w += barroundcorners / 2; /* push text left to make up for the rounded corners */
 	if (!isCode)
 		w += TEXTW(text) - lrpad;
 	else
 		isCode = 0;
 	text = p;
 
-	w += 2; /* 1px padding on both sides */
-	ret = x = m->ww - w - 2 * sp;
+	ret = m->ww - w;
+	x = barroundcorners;
 
 	drw_setscheme(drw, scheme[LENGTH(colors)]);
 	drw->scheme[ColFg] = scheme[SchemeNorm][ColFg];
 	drw->scheme[ColBg] = scheme[SchemeNorm][ColBg];
-	drw_rect(drw, x, 0, w, bh, 1, 1);
+	drw_rect(drw, 0, 0, w + 2 * barroundcorners, bh, 1, 1);
 	x++;
 
 	/* process status text */
@@ -936,6 +936,13 @@ drawbar(Monitor *m)
 		tw = m->ww - drawstatusbar(m, bh, stext);
 	}
 
+	XResizeWindow(dpy, m->statuswin, tw + 2 * barroundcorners, bh);
+	XMoveWindow(dpy, m->statuswin, m->ww - tw - sp - 2 * barroundcorners, m->by + vp);
+
+	drw_map(drw, m->statuswin, 0, 0, m->ww, bh);
+	win_round_corners(m->statuswin, barroundcorners);
+	drw_map(drw, m->statuswin, 0, 0, m->ww, bh);
+
 	for (c = m->clients; c; c = c->next) {
 		occ |= c->tags;
 		if (c->isurgent)
@@ -952,13 +959,12 @@ drawbar(Monitor *m)
 		x += w;
 	}
 	w = blw = TEXTW(m->ltsymbol);
+
 	drw_setscheme(drw, scheme[SchemeNorm]);
 	x = drw_text(drw, x, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
 
-	if ((w = m->ww - tw - x) > bh) {
-			drw_setscheme(drw, scheme[SchemeNorm]);
-			drw_rect(drw, x, 0, w, bh, 1, 1);
-	}
+	XResizeWindow(dpy, m->barwin, x - 8, bh);
+
 	drw_map(drw, m->barwin, 0, 0, m->ww, bh);
 	win_round_corners(m->barwin, barroundcorners);
 }
@@ -1414,7 +1420,7 @@ movemouse(const Arg *arg)
 	if (!getrootptr(&x, &y))
 		return;
 	do {
-		XMaskEvent(dpy, MOUSEMASK|ExposureMask|SubstructureRedirectMask, &ev);
+		XMaskEvent(dpy, KeyPressMask|MOUSEMASK|ExposureMask|SubstructureRedirectMask, &ev);
 		switch(ev.type) {
 		case ConfigureRequest:
 		case Expose:
@@ -1443,7 +1449,7 @@ movemouse(const Arg *arg)
 				resize(c, nx, ny, c->w, c->h, 1);
 			break;
 		}
-	} while (ev.type != ButtonRelease);
+} while (ev.type != ButtonRelease && ev.type != KeyPress);
 	XUngrabPointer(dpy, CurrentTime);
 	if ((m = recttomon(c->x, c->y, c->w, c->h)) != selmon) {
 		sendmon(c, m);
@@ -2157,12 +2163,21 @@ updatebars(void)
 	for (m = mons; m; m = m->next) {
 		if (m->barwin)
 			continue;
-		m->barwin = XCreateWindow(dpy, root, m->wx + sp, m->by + vp, m->ww - 2 * sp, bh, 0, depth,
+		m->barwin = XCreateWindow(dpy, root, m->wx + sp, m->by + vp, 1, 1, 0, depth,
 		                          InputOutput, visual,
 		                          CWOverrideRedirect|CWBackPixel|CWBorderPixel|CWColormap|CWEventMask, &wa);
 		XDefineCursor(dpy, m->barwin, cursor[CurNormal]->cursor);
 		XMapRaised(dpy, m->barwin);
 		XSetClassHint(dpy, m->barwin, &ch);
+
+		if (m->statuswin)
+			continue;
+		m->statuswin = XCreateWindow(dpy, root, m->wx + sp, m->by + vp, 1, 1, 0, depth,
+		                             InputOutput, visual,
+		                             CWOverrideRedirect|CWBackPixel|CWBorderPixel|CWColormap|CWEventMask, &wa);
+		XDefineCursor(dpy, m->statuswin, cursor[CurNormal]->cursor);
+		XMapRaised(dpy, m->statuswin);
+		XSetClassHint(dpy, m->statuswin, &ch);
 	}
 }
 
