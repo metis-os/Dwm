@@ -6,7 +6,7 @@ ssname=$(date +%N | sed 's/...$//').png
 
 # Poweroff selection menu
 poweroff_menu() {
-  selected=$(printf "%s\n" "cancel" "shutdown" "reboot" "sleep" "tty" | dmenu -c)
+  selected=$(printf "%s\n" "cancel" "shutdown" "reboot" "sleep" | dmenu -c)
   case "$selected" in
     "shutdown")
       doas poweroff
