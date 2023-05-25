@@ -35,7 +35,7 @@ ss_without_selection() {
   check_ssdir
   import -window root "$HOME/pix/ss/$ssname"
   xclip -selection clipboard -t image/png -i "$HOME/pix/ss/$ssname"
-  notify-send "Screenshot taken without selection" "Screenshot image copied to clipboard"
+  notify-send  -i "$HOME/pix/ss/$ssname" "Screenshot taken" "Screenshot image copied to clipboard"
 }
 
 # Take a screenshot using ImageMagick with selection menu
@@ -43,7 +43,7 @@ ss_with_selection() {
   check_ssdir
   import "$HOME/pix/ss/$ssname"
   xclip -selection clipboard -t image/png -i "$HOME/pix/ss/$ssname"
-  notify-send "Screenshot taken with selection" "Screenshot image copied to clipboard"
+  notify-send -i "$HOME/pix/ss/$ssname" "Screenshot taken" "Screenshot image copied to clipboard"
 }
 
 # Search in a browser directly through dmenu
@@ -55,8 +55,39 @@ search() {
   fi
 }
 
+# Function to handle the quick links
+handle_quicklinks() {
+  declare -a names=()
+  declare -a urls=()
+  while IFS=, read -r name url; do
+    names+=("$name")
+    urls+=("$url")
+  done < ~/.config/dwm/quicklinks.csv
+
+  # Build the menu options
+  menu_options=""
+  for name in "${names[@]}"; do
+    menu_options+="$name\n"
+  done
+
+  choice=$(echo -e "$menu_options" | sort -u | dmenu -c -i -l 10 -nb "$bg" -nf "$fg" -sb "$altbg" -sf "$fg" -fn "$FONT" -p 'Quick Links:')
+
+  for i in "${!names[@]}"; do
+    if [[ "${names[$i]}" == "$choice" ]]; then
+      url="${urls[$i]}"
+      break
+    fi
+  done
+
+  if [ -n "$url" ]; then
+    xdg-open "https://$url"
+  else
+    echo "Exiting..."; exit 1
+  fi
+}
+
 # getopt implementation for arguments
-while getopts 'sbpw' option; do
+while getopts 'sbpwq' option; do
   case "$option" in
     s)
       ss_with_selection
@@ -69,6 +100,9 @@ while getopts 'sbpw' option; do
       ;;
     w)
       search
+      ;;
+    q)
+      handle_quicklinks
       ;;
     *)
       exit 1

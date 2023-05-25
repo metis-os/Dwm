@@ -33,6 +33,7 @@ static const char *ss_without_selection[] = {"metis-dwm-script", "-b", NULL};
 static const char *ss_with_selection[] = {"metis-dwm-script", "-s", NULL};
 static const char *searchmenu[] = {"metis-dwm-script", "-w", NULL};
 static const char *powermenu[] = {"metis-dwm-script", "-p", NULL};
+static const char *quicklinks[] = {"metis-dwm-script", "-q", NULL};
 
 static char *colors[][3] = {
        /*               fg           bg           border   */
@@ -102,7 +103,8 @@ static Key keys[] = {
 	{ ShiftMask,			XK_Print,	        spawn,			{.v = ss_without_selection}},
 	{ 0,			        XK_Print,	        spawn,			{.v = ss_with_selection}},
         { MODKEY|ShiftMask,             XK_x,                   spawn,                  {.v = powermenu } },
-        { MODKEY|ShiftMask,             XK_u,                   spawn,                  {.v = searchmenu } },
+        { MODKEY|ShiftMask,             XK_b,                   spawn,                  {.v = searchmenu } },
+        { MODKEY|ShiftMask,             XK_u,                   spawn,                  {.v = quicklinks} },
 
 	{ MODKEY,                       XK_grave,  togglescratch,                 {.v = scratchpadcmd } },
 	{ MODKEY,                       XK_l,      setmfact,		          {.f = +0.05} },

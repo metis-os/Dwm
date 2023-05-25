@@ -43,5 +43,6 @@ package() {
   make PREFIX=/usr DESTDIR="$pkgdir" install
   install -m644 -D "$srcdir/dwm/scripts/dwm.desktop" "$pkgdir/usr/share/xsessions/dwm.desktop"
   install -m755 -D "$srcdir/dwm/scripts/metis-dwm-script" "$pkgdir/usr/local/bin/metis-dwm-script"
+  install -m755 -D "$srcdir/dwm/scripts/dwmbar" "$pkgdir/usr/local/bin/dwmbar"
 }
 
