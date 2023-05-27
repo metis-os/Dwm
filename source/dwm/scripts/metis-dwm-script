@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Copyright PwnWriter // METIS Linux 2022 - present 
+# Copyright PwnWriter // METIS Linux 2022 - present
 
 # Global variable to generate random number
 ssname=$(date +%N | sed 's/...$//').png
@@ -86,8 +86,24 @@ handle_quicklinks() {
   fi
 }
 
+#  increase volume
+increase_volume() {
+        pactl set-sink-volume @DEFAULT_SINK@ +5%
+}
+
+# decrease volume
+decrease_volume() {
+        pactl set-sink-volume @DEFAULT_SINK@ -5%
+}
+
+# mute/unmute volume
+toggle_mute() {
+        local icon_dir="/usr/share/icons/dwm/dunst"
+        pactl set-sink-mute @DEFAULT_SINK@ toggle 
+}
+
 # getopt implementation for arguments
-while getopts 'sbpwq' option; do
+while getopts 'sbpwqvudm' option; do
   case "$option" in
     s)
       ss_with_selection
@@ -103,6 +119,15 @@ while getopts 'sbpwq' option; do
       ;;
     q)
       handle_quicklinks
+      ;;
+    u)
+      increase_volume
+      ;;
+    d)
+      decrease_volume
+      ;;
+    m)
+      toggle_mute
       ;;
     *)
       exit 1

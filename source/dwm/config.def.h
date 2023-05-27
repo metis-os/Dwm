@@ -22,9 +22,9 @@ static char selfgcolor[]            = "#e617b6";
 static char selbordercolor[]        = "#f542aa";
 static char selbgcolor[]            = "#4f4746";
 
-static const char *upvol[]      = { "pactl", "set-sink-volume", "0", "+5%",     NULL };
-static const char *downvol[]    = { "pactl", "set-sink-volume", "0", "-5%",     NULL };
-static const char *mutevol[]    = { "pactl", "set-sink-mute",   "0", "toggle",  NULL };
+static const char *upvol[]      = { "metis-dwm-script", "-u",     NULL };
+static const char *downvol[]    = { "metis-dwm-script", "-d",     NULL };
+static const char *mutevol[]    = { "metis-dwm-script", "-m",     NULL };
 static const char *light_up[]   = {"brillo", "-A", "3", NULL};
 static const char *light_down[] = {"brillo", "-U", "3", NULL};
 
