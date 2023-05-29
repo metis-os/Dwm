@@ -34,6 +34,7 @@ static const char *ss_with_selection[] = {"metis-dwm-script", "-s", NULL};
 static const char *searchmenu[] = {"metis-dwm-script", "-w", NULL};
 static const char *powermenu[] = {"metis-dwm-script", "-p", NULL};
 static const char *quicklinks[] = {"metis-dwm-script", "-q", NULL};
+static const char *utilities[] = {"metis-dwm-script", "-r", NULL};
 
 static char *colors[][3] = {
        /*               fg           bg           border   */
@@ -105,6 +106,7 @@ static Key keys[] = {
         { MODKEY|ShiftMask,             XK_x,                   spawn,                  {.v = powermenu } },
         { MODKEY|ShiftMask,             XK_b,                   spawn,                  {.v = searchmenu } },
         { MODKEY|ShiftMask,             XK_u,                   spawn,                  {.v = quicklinks} },
+        { MODKEY|ShiftMask,             XK_h,                   spawn,                  {.v = utilities} },
 
 	{ MODKEY,                       XK_grave,  togglescratch,                 {.v = scratchpadcmd } },
 	{ MODKEY,                       XK_l,      setmfact,		          {.f = +0.05} },

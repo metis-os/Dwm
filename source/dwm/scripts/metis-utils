@@ -1,0 +1,104 @@
+#!/bin/bash
+
+# Copyright PwnWriter // METIS Linux (metislinux.org)
+#
+
+
+fg="#ffffff"  # White
+bg="#282a36"  # Dark Gray
+altbg="#44475a"  # Gray
+
+menu_options="ﰻ Run Eww\n Take Screenshot\n Change Wallpaper\n Open Editor\n Play Music\n Key Bindings"
+
+open_eww() {
+    eww open eww > /dev/null 2>&1 || (pkill -9 eww && eww open eww > /dev/null 2>&1)
+}
+
+take_screenshot() {
+    mode=$(echo -e " Full Screen\n禎 Select Area" | dmenu -c -i -l 2 -nb "$bg" -nf "$fg" -sb "$altbg" -sf "$fg" -fn "$FONT" -p 'Select mode:')
+    mode_text=$(echo $mode | cut -c 5-)
+    local img="/tmp/screenshot.png"
+
+    case "$mode_text" in
+        "Full Screen")
+            # Capture full screen
+            import -window root "$img" && xclip -sel c -t image/png -i "$img" && notify-send -i "$img" "screenshot taken" "Screenshot taken and copied to  clipboard"
+            ;;
+        "Select Area")
+            # Capture selected area
+         
+            import "$img" && xclip -sel c -t image/png -i "$img" && notify-send -i "$img" "screenshot taken" "Screenshot taken and copied to  clipboard"
+ 
+            ;;
+        *)
+            exit 1
+            ;;
+    esac
+    
+    # Remove temporary screenshot file
+    rm /tmp/screenshot.png
+}
+
+change_wall() {
+        # Change and generate music on the fly
+        local wall_dir="$HOME/.local/wallpapers/"
+        choose_mode=$(echo -e "גּ Pick random\n禎 Select one" | dmenu -c -i -l 2 -nb "$bg" -nf "$fg" -sb "$altbg" -sf "$fg" -fn "$FONT" -p 'Select mode:')
+        choose_wall=$(echo "$choose_mode" | cut -c 5-)
+        case "$choose_wall" in
+                "Pick random")
+                        setbg "$wall_dir"
+                        ;;
+                "Select one")
+                        nsxiv -tb "$wall_dir"
+                        ;;
+                *)
+                        exit 1
+                        ;;
+        esac
+}
+
+
+open_editor() {
+        # GUI frontend for neovim 
+        neovide &
+} 
+
+play_music() {
+        # Play music without mpd shit
+        local music_dir="$HOME/music"
+        select_music="$(ls "$music_dir" | sort -u | dmenu -c -i -l 5 -nb "$bg" -nf "$fg" -sb "$altbg" -sf "$fg" -fn "$FONT" -p ' Play music')" && st -n scratchpad -g 80x15 -e mpv --no-video "$music_dir/$select_music" > /dev/null 2>&1
+
+}
+
+key_bindings() {
+        # Yad app to show metislinux all wm's keybindings
+        metis-keybindings
+}
+
+choice=$(echo -e "$menu_options" | sort -u | dmenu -c -i -l 10 -nb "$bg" -nf "$fg" -sb "$altbg" -sf "$fg" -fn "$FONT" -p 'Quick  menu:')
+choice_text=$(echo $choice | cut -c 5-)
+
+case "$choice_text" in
+    "Run Eww")
+        open_eww
+        ;;
+    "Take Screenshot")
+        take_screenshot
+        ;;
+    "Change Wallpaper")
+        change_wall
+        ;;
+    "Open Editor")
+        open_editor
+        ;;
+    "Play Music")
+        play_music
+        ;;
+    "Key Bindings")
+        key_bindings
+        ;;
+    *)
+        exit 1
+        ;;
+esac
+

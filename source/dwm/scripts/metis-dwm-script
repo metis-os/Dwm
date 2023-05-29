@@ -70,7 +70,7 @@ handle_quicklinks() {
     menu_options+="$name\n"
   done
 
-  choice=$(echo -e "$menu_options" | sort -u | dmenu -c -i -l 10 -nb "$bg" -nf "$fg" -sb "$altbg" -sf "$fg" -fn "$FONT" -p 'Quick Links:')
+  choice=$(echo -e "$menu_options" | sort -u | dmenu -c -i -l 10 -nb "$bg" -nf "$fg" -sb "$altbg" -sf "$fg" -fn "$FONT" -p ' Quick Links:')
 
   for i in "${!names[@]}"; do
     if [[ "${names[$i]}" == "$choice" ]]; then
@@ -102,8 +102,12 @@ toggle_mute() {
         pactl set-sink-mute @DEFAULT_SINK@ toggle 
 }
 
+run_utilities(){
+        command metis-utils
+}
+
 # getopt implementation for arguments
-while getopts 'sbpwqvudm' option; do
+while getopts 'sbpwqvudmr' option; do
   case "$option" in
     s)
       ss_with_selection
@@ -128,6 +132,10 @@ while getopts 'sbpwqvudm' option; do
       ;;
     m)
       toggle_mute
+      ;;
+
+    r)
+        run_utilities
       ;;
     *)
       exit 1
