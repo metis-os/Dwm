@@ -13,5 +13,4 @@
   
 -----
 
-https://github.com/metis-os/metis-dwm/assets/90331517/116d0591-79af-451e-8d94-009811fc6fe7
-
+![](https://user-images.githubusercontent.com/90331517/242244485-41a1b68a-fb28-4a3f-90c2-054ce2d07138.png)
