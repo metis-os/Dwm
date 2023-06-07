@@ -21,20 +21,44 @@ pkg_updates() {
   # updates=$({ timeout 20 aptitude search '~U' 2>/dev/null || true; } | wc -l)  # apt (ubuntu, debian etc)
 
   if [ -z "$updates" ]; then
-    printf "^c$green^ Fully Updated"
+    printf "^c$green^ Fully Updated"
   else
-    printf "^c$green^ $updates"" updates"
+    printf "^c$green^ $updates"" updates"
   fi
 }
 
 battery() {
-  get_capacity="$(cat /sys/class/power_supply/*/capacity)"
-  printf "^c$blue^   $get_capacity"
+    local get_capacity="$(cat /sys/class/power_supply/*/capacity)"
+    local charging_emojis=(" " " " " " " ")
+    local charging_emoji_index=$((get_capacity / 25))
+    local low_battery_notification_file="/tmp/low_battery_notification"
+
+    if [[ charging_emoji_index -gt 3 ]]; then
+        charging_emoji_index=3
+    fi
+
+    local charging_emoji="${charging_emojis[$charging_emoji_index]}"
+
+    printf "%s" "^c$blue^ $charging_emoji $get_capacity%"
 }
 
+
+
+
 brightness() {
-  printf "^c$red^   "
-  printf "^c$red^%.0f\n" $(brillo)
+  brightness_val="$(brillo | cut -d . -f1)"
+  brightness_emojis=("" "󰃛" " " "󰃚 ")
+  brightness_emoji_index=$((brightness_val / 25))
+
+  if [[ brightness_emoji_index -gt 3 ]]; then
+    brightness_emoji_index=3
+  fi
+
+  brightness_emoji="${brightness_emojis[$brightness_emoji_index]}"
+
+  printf "^c$black^ ^b$red^ $brightness_emoji "
+  printf "%s" "^c$red^^b$black^ $brightness_val%"
+
 }
 
 mem() {
@@ -54,10 +78,28 @@ clock() {
 	printf "^c$black^^b$blue^ $(date '+%H:%M') "
 }
 
+volume() {
+    local volume_val=$(pactl list sinks | grep '^[[:space:]]Volume:' | awk '{gsub(/[\[\]%]/, "", $5); print $5}')
+    local icon=""
+
+    if [ "$volume_val" -eq 0 ]; then
+        icon="󰝛 "  # Icon for mute
+    elif [ "$volume_val" -lt 50 ]; then
+        icon=""  # Icon for middle volume
+    else
+        icon=""  # Icon for full volume
+    fi
+
+    printf "^c$black^ ^b$blue^ $icon"
+    printf "%s" "^c$white^ ^b$grey^ $volume_val%"
+}
+
+
+
 while true; do
 
   [ $interval = 0 ] || [ $(($interval % 3600)) = 0 ] && updates=$(pkg_updates)
   interval=$((interval + 1))
 
-  sleep 1 && xsetroot -name "$updates $(battery) $(brightness) $(cpu) $(mem) $(wlan) $(clock)"
+  sleep 1 && xsetroot -name " $updates $(brightness) $(mem) $(volume) $(battery)  $(cpu) $(wlan) $(clock)"
 done

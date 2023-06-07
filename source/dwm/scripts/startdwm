@@ -1,0 +1,4 @@
+#!/bin/sh
+# Simple script to start dwm
+
+startx dwm

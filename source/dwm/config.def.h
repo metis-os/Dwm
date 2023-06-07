@@ -25,8 +25,8 @@ static char selbgcolor[]            = "#4f4746";
 static const char *upvol[]      = { "metis-dwm-script", "-u",     NULL };
 static const char *downvol[]    = { "metis-dwm-script", "-d",     NULL };
 static const char *mutevol[]    = { "metis-dwm-script", "-m",     NULL };
-static const char *light_up[]   = {"brillo", "-A", "3", NULL};
-static const char *light_down[] = {"brillo", "-U", "3", NULL};
+static const char *light_up[]   = {"brillo", "-A", "10", NULL};
+static const char *light_down[] = {"brillo", "-U", "10", NULL};
 
 /* This part is from metislinux dwm script */
 static const char *ss_without_selection[] = {"metis-dwm-script", "-b", NULL};
@@ -57,7 +57,7 @@ static const Rule rules[] = {
 	 *	WM_NAME(STRING) = title
 	 */
 	/* class		instance	 title		        tags        mask  isfloating  noswallow  monitor              scratch key */
-	{ "firefox",   	NULL,		NULL,             1         << 1,			0,			0,         -1,      -1,   0 },
+	{ "brave",   	NULL,		NULL,             1         << 1,			0,			0,         -1,      -1,   0 },
 	{ NULL,         NULL, 	"Event Tester",   0,				   0,     0,			1,		      0       -1, 0 }, /* xev */
 	{ NULL,		  "scratchpad",	NULL,		        0,		   1,			0,		      0,       -1, 's' },
 };

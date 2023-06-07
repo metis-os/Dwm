@@ -6,21 +6,29 @@ ssname=$(date +%N | sed 's/...$//').png
 
 # Poweroff selection menu
 poweroff_menu() {
-  selected=$(printf "%s\n" "cancel" "shutdown" "reboot" "sleep" | dmenu -c)
-  case "$selected" in
-    "shutdown")
-      doas poweroff
-      ;;
-    "reboot")
-      doas reboot
-      ;;
-    "sleep")
-      doas zzz
-      ;;
-    "cancel")
-      return
-      ;;
-  esac
+	menu=$(printf "%s\n" " cancel" "⏻ shutdown" "敏 reboot" "鈴 sleep" " lock" " logout" | dmenu -c -l 7 -p "Powermenu  " )
+	selected=$(echo $menu | sort | cut -c 5-)
+	case "$selected" in
+		"shutdown")
+			doas poweroff
+			;;
+		"reboot")
+			doas reboot
+			;;
+		"sleep")
+			doas zzz
+			;;
+		"cancel")
+			return
+			;;
+		"lock")
+			slock 
+			;;
+
+		"logout")
+			pkill -9 x
+			;;
+	esac
 }
 
 # Check the directory to save screenshots. Create one if not found.
@@ -88,12 +96,21 @@ handle_quicklinks() {
 
 #  increase volume
 increase_volume() {
-        pactl set-sink-volume @DEFAULT_SINK@ +5%
+    local volume=$(pactl list sinks | awk '/Volume:.*%/{print $5}' | tr -d '%' | head -n1)
+
+    if (( volume + 10 > 200 )); then
+        notify-send "Volume Warning" "The volume is at its maximum level!"
+        return 1
+    fi
+
+    pactl set-sink-volume @DEFAULT_SINK@ +10%
 }
+
+
 
 # decrease volume
 decrease_volume() {
-        pactl set-sink-volume @DEFAULT_SINK@ -5%
+        pactl set-sink-volume @DEFAULT_SINK@ -10%
 }
 
 # mute/unmute volume

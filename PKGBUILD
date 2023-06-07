@@ -2,7 +2,7 @@
 
 pkgname=metis-dwm
 pkgver=2.0
-pkgrel=0
+pkgrel=2
 pkgdesc="DWM for metis-os"
 url="https://github.com/metis-os/metis-dwm"
 arch=('x86_64')
@@ -23,9 +23,10 @@ build() {
   make
   cd "$srcdir/dwm"
   make
-  cd "$srcdir/slstatus"
-  make
   cd "$srcdir/st"
+  make
+
+  cd "$srcdir/slock"
   make
 }
 
@@ -34,9 +35,10 @@ package() {
   make PREFIX=/usr DESTDIR="$pkgdir" install
   cd "$srcdir/dwm"
   make PREFIX=/usr DESTDIR="$pkgdir" install
-  cd "$srcdir/slstatus"
-  make PREFIX=/usr DESTDIR="$pkgdir" install
   cd "$srcdir/st"
+  make PREFIX=/usr DESTDIR="$pkgdir" install
+
+  cd "$srcdir/slock"
   make PREFIX=/usr DESTDIR="$pkgdir" install
 
   cd "$srcdir/dwm"  # Assuming metis-dwm is the main project directory
@@ -45,5 +47,6 @@ package() {
   install -m755 -D "$srcdir/dwm/scripts/metis-dwm-script" "$pkgdir/usr/local/bin/metis-dwm-script"
   install -m755 -D "$srcdir/dwm/scripts/dwmbar" "$pkgdir/usr/local/bin/dwmbar"
   install -m755 -D "$srcdir/dwm/scripts/metis-utils" "$pkgdir/usr/local/bin/metis-utils"
+  install -m755 -D "$srcdir/dwm/scripts/startdwm" "$pkgdir/usr/local/bin/startdwm"
 }
 
